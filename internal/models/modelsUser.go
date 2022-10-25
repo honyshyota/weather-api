@@ -3,6 +3,7 @@ package models
 import (
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -20,4 +21,8 @@ func (u *User) Validate() error {
 		validation.Field(&u.Name, validation.NilOrNotEmpty),
 		validation.Field(&u.Password, validation.NilOrNotEmpty),
 	)
+}
+
+func (u *User) SetUuid() {
+	u.Uuid = uuid.NewString()
 }
