@@ -130,7 +130,7 @@ func TestController_getShortForecast(t *testing.T) {
 			r.HandleFunc("/short_forecast", controller.getShortForecast)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/short_forecast", bytes.NewBufferString(tc.input))
+			req := httptest.NewRequest("POST", "/short_forecast", bytes.NewBufferString(tc.input))
 
 			r.ServeHTTP(w, req)
 
@@ -205,7 +205,68 @@ func TestController_getFullForecast(t *testing.T) {
 			r.HandleFunc("/full_forecast", controller.getFullForecastForDate)
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest("GET", "/full_forecast", bytes.NewBufferString(tc.input))
+			req := httptest.NewRequest("POST", "/full_forecast", bytes.NewBufferString(tc.input))
+
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedCode, w.Code)
+			assert.Equal(t, tc.expectedRequestBody, w.Body.String())
+		})
+	}
+}
+
+func TestController_usersCreate(t *testing.T) {
+	type mockBehaviorCreate func(s1 *mock.MockUsecase, user models.User)
+	type mockBehaviorFind func(s2 *mock.MockUsecase, user models.User)
+
+	testCases := []struct {
+		name                string
+		input               string
+		model               models.User
+		mockBehaviorCreate  mockBehaviorCreate
+		mockBehaviorFind    mockBehaviorFind
+		expectedCode        int
+		expectedRequestBody string
+	}{
+		{
+			name:  "valid",
+			input: `{"name":"Semen","email":"semensuprunenko@gmail.com","password":"123456789"}`,
+			model: models.User{
+				Name:     "Semen",
+				Email:    "semensuprunenko@gmail.com",
+				Password: "123456789",
+			},
+			mockBehaviorCreate: func(s1 *mock.MockUsecase, user models.User) {
+				s1.EXPECT().CreateUser(&user).Return(nil)
+			},
+			mockBehaviorFind: func(s2 *mock.MockUsecase, user models.User) {
+				s2.EXPECT().FindUser(user.Name).Return(&models.User{
+					Name:     "Semen",
+					Email:    "semensuprunenko@gmail.com",
+					Password: "123456789",
+				}, nil)
+			},
+			expectedCode:        http.StatusCreated,
+			expectedRequestBody: `{"name":"Semen","email":"semensuprunenko@gmail.com","password":"123456789"}` + "\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			usecase := mock.NewMockUsecase(c)
+			tc.mockBehaviorCreate(usecase, tc.model)
+			tc.mockBehaviorFind(usecase, tc.model)
+
+			controller := NewController(usecase, sessions.NewCookieStore([]byte("some_key")))
+
+			r := mux.NewRouter()
+			r.HandleFunc("/users", controller.usersCreate)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("POST", "/users", bytes.NewBufferString(tc.input))
 
 			r.ServeHTTP(w, req)
 
