@@ -1,0 +1,184 @@
+basePath: /
+definitions:
+  models.SwaggerCity:
+    properties:
+      fav_city:
+        type: string
+    type: object
+  models.SwaggerFullForecast:
+    properties:
+      date:
+        type: string
+      name:
+        type: string
+    type: object
+  models.SwaggerLoginUser:
+    properties:
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  models.SwaggerUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+host: localhost:8181
+info:
+  contact: {}
+  description: API server weather forecast
+  title: Weather API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: list of available cities
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Get City List
+      tags:
+      - Weather
+  /full_forecast:
+    post:
+      consumes:
+      - application/json
+      description: getting a forecast for the requested city and date
+      parameters:
+      - description: city and date input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SwaggerFullForecast'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: Full forecast for date
+      tags:
+      - Weather
+  /private/fav_city:
+    post:
+      consumes:
+      - application/json
+      description: update favorite city
+      parameters:
+      - description: city info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SwaggerCity'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+      summary: Update Favorite City
+      tags:
+      - users
+  /private/shutdown:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: Shutdown Server
+      tags:
+      - users
+  /sessions:
+    post:
+      consumes:
+      - application/json
+      description: login user
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SwaggerLoginUser'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Login
+      tags:
+      - users
+  /short_forecast:
+    post:
+      consumes:
+      - application/json
+      description: getting a forecast for the requested city
+      parameters:
+      - description: city info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SwaggerCity'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+      summary: Forecast for dates
+      tags:
+      - Weather
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: create user
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.SwaggerUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      summary: Create User
+      tags:
+      - users
+securityDefinitions:
+  ApiKeyAuth:
+    in: cookie
+    name: weather_api
+    type: apiKey
+swagger: "2.0"
