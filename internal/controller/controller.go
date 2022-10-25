@@ -85,8 +85,6 @@ func (c *Controller) usersCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.Uuid = uuid.NewString()
-
 	err := c.usecase.CreateUser(&user)
 	if err != nil {
 		c.error(w, r, http.StatusBadRequest, errIncorrectInput)
