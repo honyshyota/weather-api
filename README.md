@@ -67,7 +67,7 @@ date — дата предсказания
 * ```http POST http://localhost:8181/sessions```
 * Формат запроса ```{"name":"{user_name}","email":"{user_email}"}```
 *
-*                                   ***Доступно только с установленным cookie***
+*                                   <***Доступно только с установленным cookie***>
 *
 * Устанавливает любимый город пользователя, принимает json, возращает json
 * ```http POST http://localhost:8181/private/fav_city```
