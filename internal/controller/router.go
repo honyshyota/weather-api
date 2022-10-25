@@ -46,7 +46,7 @@ func Build(usecase usecase.Usecase, config *config.Config) {
 	private := router.PathPrefix("/private").Subrouter()
 	private.Use(controller.authenticateUser)
 	private.HandleFunc("/fav_city", controller.createFavCity).Methods("POST")
-	private.HandleFunc("/shutdown", srv.ShutdownHandler)
+	private.HandleFunc("/shutdown", srv.ShutdownHandler).Methods("GET")
 
 	router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
 
