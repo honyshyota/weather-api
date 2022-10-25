@@ -43,35 +43,35 @@ date — дата предсказания
 -----------------------------------
 
 * Запускать с помощью ```make```
-* 
+ 
 * Swagger работает на адресе ```http://localhost:8181/swagger/index.html```
 * Cookie в Swagger устанавливаются на полное время их жизни, сменить можно только зайдя под другим пользователем
-*
+
 * Возвращает все доступные названия городов, возращает json
-* ```http GET http://localhost:8181/```
-* 
+ ```http GET http://localhost:8181/```
+ 
 * Возращает все возможные прогнозы на будущее время с интервалом 3 часа, прнимает json, возращает json
-* ```http POST http://localhost:8181/short_forecast```
+ ```http POST http://localhost:8181/short_forecast```
 * Формат запроса ```{"name":"{city_name}"}```
-*  
+  
 * Возращает все возможные данные по погоне на выбраный период для выбраного города, принимает json, возращает json
-* ```http POST http://localhost:8181/full_forecast```
+ ```http POST http://localhost:8181/full_forecast```
 * Формат запроса ```{"name":"{city_name}","date":"{date}"}```
-* 
+ 
 * Регистрация пользователей, принимает json, возращает json 
-* ```http POST http://localhost:8181/users```
+ ```http POST http://localhost:8181/users```
 * Формат запроса ```{"name":"{user_name}","email":"{user_email}","password":"{user_password}"}```
-* 
+
 * Аутентификация пользователя, принимает json, возращает ```Set-Cookie:```
 * допольнительно так же возращает cookie в json (нужно для корректной работы swagger)
-* ```http POST http://localhost:8181/sessions```
+ ```http POST http://localhost:8181/sessions```
 * Формат запроса ```{"name":"{user_name}","email":"{user_email}"}```
-*
-*                                   Доступно только с установленным cookie
-*
+
+                                   Доступно только с установленным cookie
+
 * Устанавливает любимый город пользователя, принимает json, возращает json
-* ```http POST http://localhost:8181/private/fav_city```
+ ```http POST http://localhost:8181/private/fav_city```
 * Формат запроса ```{"fav_city":"{input_city}"}```
-* 
+ 
 * Выключение сервера
-* ```http GET http://localhost:8181/private/shutdown```
+ ```http GET http://localhost:8181/private/shutdown```
