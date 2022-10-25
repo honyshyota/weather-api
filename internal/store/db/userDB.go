@@ -22,6 +22,8 @@ func (u *userRepo) Create(user *models.User) error {
 		return err
 	}
 
+	user.SetUuid()
+
 	query := "INSERT INTO users (uuid, name, email, password) VALUES ($1, $2, $3, $4)"
 	u.db.QueryRowx(query, user.Uuid, user.Name, user.Email, user.Password)
 
