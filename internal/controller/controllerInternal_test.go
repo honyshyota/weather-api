@@ -275,3 +275,55 @@ func TestController_usersCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestController_sessionCreate(t *testing.T) {
+	type mockBehavior func(s *mock.MockUsecase, user models.User)
+
+	testCases := []struct {
+		name                string
+		input               string
+		model               models.User
+		mockBehavior        mockBehavior
+		expectedCode        int
+		expectedRequestBody string
+	}{
+		{
+			name:  "valid",
+			input: `{"name":"Semen","password":"123456789"}`,
+			model: models.User{
+				Name:     "Semen",
+				Password: "123456789",
+			},
+			mockBehavior: func(s *mock.MockUsecase, user models.User) {
+				s.EXPECT().FindUser(user.Name).Return(&models.User{
+					Name:     "Semen",
+					Email:    "semensuprunenko@gmail.com",
+					Password: "123456789",
+				}, nil)
+			},
+			expectedCode: http.StatusAccepted,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			usecase := mock.NewMockUsecase(c)
+			tc.mockBehavior(usecase, tc.model)
+
+			controller := NewController(usecase, sessions.NewCookieStore([]byte("some_key")))
+
+			r := mux.NewRouter()
+			r.HandleFunc("/sessions", controller.sessionsCreate)
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest("POST", "/sessions", bytes.NewBufferString(tc.input))
+
+			r.ServeHTTP(w, req)
+
+			assert.Equal(t, tc.expectedCode, w.Code)
+		})
+	}
+}

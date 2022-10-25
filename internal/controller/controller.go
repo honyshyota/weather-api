@@ -125,14 +125,14 @@ func (c *Controller) sessionsCreate(w http.ResponseWriter, r *http.Request) {
 
 	session, err := c.session.Get(r, sessionName)
 	if err != nil {
-		c.error(w, r, http.StatusInternalServerError, err)
+		c.error(w, r, http.StatusInternalServerError, errInternalServer)
 		return
 	}
 
 	session.Values["user_name"] = u.Name
 
 	if err := c.session.Save(r, w, session); err != nil {
-		c.error(w, r, http.StatusInternalServerError, err)
+		c.error(w, r, http.StatusInternalServerError, errInternalServer)
 		return
 	}
 
