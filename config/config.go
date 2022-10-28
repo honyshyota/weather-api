@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -34,7 +35,7 @@ type Config struct {
 	PsqlConnect     string
 	WeatherToken    string
 	SessionKey      string
-	DbConn          *sqlx.DB
+	DbConn          *sqlx.Conn
 	HttpClient      *http.Client
 }
 
@@ -86,6 +87,12 @@ func NewConfig() *Config {
 		return nil
 	}
 
+	conn, err := db.Connx(context.Background())
+	if err != nil {
+		logrus.Errorln("[config] Cannot connect to DB, ", err)
+		return nil
+	}
+
 	logrus.Println("[config] DB connection OK")
 
 	m, err := migrate.New(
@@ -119,7 +126,7 @@ func NewConfig() *Config {
 		PsqlConnect:     psqlConnect,
 		WeatherToken:    weatherToken,
 		SessionKey:      sessionKey,
-		DbConn:          db,
+		DbConn:          conn,
 		HttpClient:      httpClient,
 	}
 

@@ -62,6 +62,8 @@ func (h *httpClient) GetForecast(cities []*models.City) ([]*models.CompleteWeath
 	var weathers []*models.CompleteWeather
 	resCh := make(chan *models.CompleteWeather, len(cities))
 	errCh := make(chan error)
+	defer close(resCh)
+	defer close(errCh)
 
 	for _, city := range cities {
 		wg.Add(1)
@@ -77,18 +79,21 @@ func (h *httpClient) GetForecast(cities []*models.City) ([]*models.CompleteWeath
 			if err != nil {
 				logrus.Errorln("[client] Failed from openweather api, ", err)
 				errCh <- err
+				return
 			}
 
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				logrus.Errorln("[client] Failed read response body, ", err)
 				errCh <- err
+				return
 			}
 
 			err = json.Unmarshal(body, &weather)
 			if err != nil {
 				logrus.Errorln("[client] Failed unmarshal JSON to variable, ", err)
 				errCh <- err
+				return
 			}
 
 			weather.City.Name = city.Name
@@ -120,6 +125,9 @@ func (h *httpClient) GetForecast(cities []*models.City) ([]*models.CompleteWeath
 
 	for i := 0; i < len(cities); i++ {
 		weathers = append(weathers, <-resCh)
+		if <-errCh != nil {
+			return nil, <-errCh
+		}
 	}
 
 	return weathers, nil

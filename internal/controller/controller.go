@@ -237,7 +237,7 @@ func (c *Controller) getCityList(w http.ResponseWriter, r *http.Request) {
 // @Description getting a forecast for the requested city
 // @Accept json
 // @Produce json
-// @Param input body models.SwaggerCity true "city info"
+// @Param input body models.SwaggerShortForecastCity true "city info"
 // @Success 200
 // @Failure 400
 // @Router /short_forecast [post]

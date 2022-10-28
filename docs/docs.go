@@ -183,7 +183,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SwaggerCity"
+                            "$ref": "#/definitions/models.SwaggerShortForecastCity"
                         }
                     }
                 ],

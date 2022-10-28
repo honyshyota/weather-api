@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -11,7 +12,7 @@ import (
 )
 
 type cityRepo struct {
-	db *sqlx.DB
+	db *sqlx.Conn
 }
 
 func NewCityDB(config *config.Config) *cityRepo {
@@ -19,18 +20,18 @@ func NewCityDB(config *config.Config) *cityRepo {
 }
 
 func (c *cityRepo) Create(cities models.CityArray) {
-	c.db.Exec(fmt.Sprintln("TRUNCATE city CASCADE"))
+	c.db.ExecContext(context.Background(), fmt.Sprintln("TRUNCATE city CASCADE"))
 
 	for _, city := range cities {
 		query := "INSERT INTO city (name, country, lat, lon) VALUES ($1, $2, $3, $4)"
-		c.db.QueryRowx(query, city.Name, city.Country, city.Lat, city.Lon)
+		c.db.QueryRowxContext(context.Background(), query, city.Name, city.Country, city.Lat, city.Lon)
 	}
 }
 
 func (c *cityRepo) GetAll() ([]*models.City, error) {
 	var cities []*models.City
 
-	rows, err := c.db.Queryx("SELECT * FROM city")
+	rows, err := c.db.QueryxContext(context.Background(), "SELECT * FROM city")
 	if err != nil {
 		logrus.Errorln("[city repo] Failed download data from city DB, ", err)
 		return nil, err
@@ -49,7 +50,7 @@ func (c *cityRepo) GetAll() ([]*models.City, error) {
 func (c *cityRepo) GetByName(name string) (*models.City, error) {
 	var city models.City
 
-	err := c.db.QueryRowx("SELECT name FROM city WHERE name = $1", name).Scan(&city.Name)
+	err := c.db.QueryRowxContext(context.Background(), "SELECT name FROM city WHERE name = $1", name).Scan(&city.Name)
 	if err != nil {
 		logrus.Errorln("[city repo] Not found city name, ", err)
 		return nil, err

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"context"
+
 	"github.com/honyshyota/weather-api/config"
 	"github.com/honyshyota/weather-api/internal/models"
 	"github.com/jmoiron/sqlx"
@@ -8,7 +10,7 @@ import (
 )
 
 type userRepo struct {
-	db *sqlx.DB
+	db *sqlx.Conn
 }
 
 func NewUserDB(config *config.Config) *userRepo {
@@ -25,7 +27,7 @@ func (u *userRepo) Create(user *models.User) error {
 	user.SetUuid()
 
 	query := "INSERT INTO users (uuid, name, email, password) VALUES ($1, $2, $3, $4)"
-	u.db.QueryRowx(query, user.Uuid, user.Name, user.Email, user.Password)
+	u.db.QueryRowxContext(context.Background(), query, user.Uuid, user.Name, user.Email, user.Password)
 
 	return nil
 }
@@ -34,7 +36,7 @@ func (u *userRepo) FindByName(name string) (*models.User, error) {
 	var user models.User
 
 	query := "SELECT name, email, password FROM users WHERE name = $1"
-	err := u.db.QueryRowx(query, name).Scan(&user.Name, &user.Email, &user.Password)
+	err := u.db.QueryRowxContext(context.Background(), query, name).Scan(&user.Name, &user.Email, &user.Password)
 	if err != nil {
 		logrus.Errorln("[users db] Failed download user, ", err)
 		return nil, err
@@ -45,5 +47,5 @@ func (u *userRepo) FindByName(name string) (*models.User, error) {
 
 func (u *userRepo) UpdateFavCity(city, name string) {
 	query := "UPDATE users SET city = $1 WHERE name = $2"
-	u.db.QueryRowx(query, city, name)
+	u.db.QueryRowxContext(context.Background(), query, city, name)
 }

@@ -17,4 +17,5 @@ func Run() {
 	usecase := usecase.NewUsecase(cityRepo, weatherRepo, userRepo, httpClient, config)
 	usecase.InitSetupApp()
 	controller.Build(usecase, config)
+	defer config.DbConn.Close()
 }

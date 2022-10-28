@@ -71,7 +71,7 @@ func NewUsecase(cityRepo CityRepo, weatherRepo WeatherRepo, userRepo UserRepo, c
 func (u *usecase) InitSetupApp() {
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go u.UpdateWeatherRepo(context.Background(), u.config)
+	go u.UpdateWeatherRepo(context.Background())
 	wg.Done()
 	wg.Wait()
 
@@ -144,18 +144,20 @@ func (u *usecase) InitCityList() *models.CityArray {
 	return &cities
 }
 
-func (u *usecase) UpdateWeatherRepo(ctx context.Context, conf *config.Config) {
+func (u *usecase) UpdateWeatherRepo(ctx context.Context) {
 
-	ticker := time.NewTicker(time.Duration(conf.UpdateTime) * time.Minute)
+	ticker := time.NewTicker(time.Duration(u.config.UpdateTime) * time.Minute)
 
-	go func(tick *time.Ticker, conf *config.Config) {
+	go func(tick *time.Ticker) {
 		for {
 			select {
 			case <-ticker.C:
+				defer u.config.DbConn.Close()
 				cities, err := u.cityRepo.GetAll()
 				if err != nil {
 					logrus.Errorln("[usecase] Failed give cities array from CityDB, ", err)
 				}
+
 				logrus.Println("[usecase] Update WeatherDB")
 				forecasts, err := u.httpClient.GetForecast(cities)
 				if err != nil {
@@ -163,11 +165,11 @@ func (u *usecase) UpdateWeatherRepo(ctx context.Context, conf *config.Config) {
 					return
 				}
 				u.weatherRepo.Update(forecasts)
-				tick.Reset(time.Duration(conf.UpdateTime) * time.Minute)
+				tick.Reset(time.Duration(u.config.UpdateTime) * time.Minute)
 			case <-ctx.Done():
 			}
 		}
-	}(ticker, conf)
+	}(ticker)
 
 }
 
