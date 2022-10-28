@@ -19,3 +19,7 @@ type SwaggerFullForecast struct {
 	Name string `json:"name"`
 	Date string `json:"date"`
 }
+
+type SwaggerShortForecastCity struct {
+	Name string `json:"name"`
+}

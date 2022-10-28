@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/honyshyota/weather-api/config"
@@ -32,7 +31,7 @@ func (h *httpClient) GetCities(names []string) (models.CityArray, error) {
 	for _, name := range names {
 		var city models.CityArray
 
-		resp, err := h.client.Get("http://api.openweathermap.org/geo/1.0/direct?q=" +
+		resp, err := h.client.Get(h.config.GetCityURI +
 			name + "&appid=" + h.config.WeatherToken)
 		if err != nil {
 			logrus.Errorln("[http client] Failed give data from openweather, ", err)
@@ -58,40 +57,32 @@ func (h *httpClient) GetCities(names []string) (models.CityArray, error) {
 }
 
 func (h *httpClient) GetForecast(cities []*models.City) ([]*models.CompleteWeather, error) {
-	var wg sync.WaitGroup
 	var weathers []*models.CompleteWeather
 	resCh := make(chan *models.CompleteWeather, len(cities))
 	errCh := make(chan error)
-	defer close(resCh)
-	defer close(errCh)
 
 	for _, city := range cities {
-		wg.Add(1)
-		go func(city *models.City, wg *sync.WaitGroup) {
-			defer wg.Done()
+		go func(city *models.City) {
 			var weather models.FullForecast
 
 			lat := fmt.Sprintf("%f", city.Lat)
 			lon := fmt.Sprintf("%f", city.Lon)
 
-			resp, err := http.Get("http://api.openweathermap.org/data/2.5/forecast?lat=" +
+			resp, err := http.Get(h.config.GetForecastURI +
 				lat + "&lon=" + lon + "&appid=" + h.config.WeatherToken + "&units=metric")
 			if err != nil {
-				logrus.Errorln("[client] Failed from openweather api, ", err)
 				errCh <- err
 				return
 			}
 
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				logrus.Errorln("[client] Failed read response body, ", err)
 				errCh <- err
 				return
 			}
 
 			err = json.Unmarshal(body, &weather)
 			if err != nil {
-				logrus.Errorln("[client] Failed unmarshal JSON to variable, ", err)
 				errCh <- err
 				return
 			}
@@ -118,15 +109,19 @@ func (h *httpClient) GetForecast(cities []*models.City) ([]*models.CompleteWeath
 			}
 
 			resCh <- resultWeather
-		}(city, &wg)
+		}(city)
 	}
 
-	wg.Wait()
-
-	for i := 0; i < len(cities); i++ {
-		weathers = append(weathers, <-resCh)
-		if <-errCh != nil {
-			return nil, <-errCh
+loop:
+	for {
+		select {
+		case value := <-resCh:
+			weathers = append(weathers, value)
+			if len(weathers) == len(cities) {
+				break loop
+			}
+		case err := <-errCh:
+			return nil, err
 		}
 	}
 

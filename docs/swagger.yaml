@@ -19,6 +19,11 @@ definitions:
       password:
         type: string
     type: object
+  models.SwaggerShortForecastCity:
+    properties:
+      name:
+        type: string
+    type: object
   models.SwaggerUser:
     properties:
       email:
@@ -141,7 +146,7 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/models.SwaggerCity'
+          $ref: '#/definitions/models.SwaggerShortForecastCity'
       produces:
       - application/json
       responses:

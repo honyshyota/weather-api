@@ -266,6 +266,14 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SwaggerShortForecastCity": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SwaggerUser": {
             "type": "object",
             "properties": {

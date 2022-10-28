@@ -21,6 +21,8 @@ import (
 )
 
 type Config struct {
+	GetCityURI      string
+	GetForecastURI  string
 	CityList        []string
 	UpdateTime      int
 	PortApp         string
@@ -57,6 +59,8 @@ func NewConfig() *Config {
 		return nil
 	}
 
+	getForecastURI := os.Getenv("GET_FORECAST_URI")
+	getCityURI := os.Getenv("GET_CITY_URY")
 	pgMigrationPath := os.Getenv("PG_MIGRATIONS_PATH")
 	updTime, err := strconv.Atoi(os.Getenv("UPD_TIME"))
 	if err != nil {
@@ -112,6 +116,8 @@ func NewConfig() *Config {
 	logrus.Println("[config] Migrate done")
 
 	config := &Config{
+		GetCityURI:      getCityURI,
+		GetForecastURI:  getForecastURI,
 		UpdateTime:      updTime,
 		ReadTO:          readTO,
 		WriteTO:         writeTO,
