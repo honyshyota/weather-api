@@ -61,6 +61,9 @@ func (h *httpClient) GetForecast(cities []*models.City) ([]*models.CompleteWeath
 	resCh := make(chan *models.CompleteWeather, len(cities))
 	errCh := make(chan error)
 
+	defer close(resCh)
+	defer close(errCh)
+
 	for _, city := range cities {
 		go func(city *models.City) {
 			var weather models.FullForecast
